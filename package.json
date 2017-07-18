@@ -1,0 +1,49 @@
+{
+  "name": "cancellationtoken",
+  "version": "1.0.0",
+  "description": "A composable token for cancelling asynchronous operations.",
+  "author": "Conrad Reuter <jacob.conrad.reuter@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/conradreuter/cancellationtoken#readme",
+  "repository": "conradreuter/cancellationtoken",
+  "bugs": "https://github.com/conradreuter/cancellationtoken/issues",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "keywords": [
+    "abort",
+    "async",
+    "cancel",
+    "cancellation",
+    "job",
+    "promise",
+    "task",
+    "token"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist/",
+    "test": "jest -c jest.json --coverage",
+    "watch": "npm run test -- --watch",
+    "info": "npm-scripts-info",
+    "prepublish": "npm run clean && npm run build"
+  },
+  "scripts-info": {
+    "build": "Builds the project.",
+    "clean": "Cleans the build directory.",
+    "test": "Run the unit tests once with code coverage.",
+    "watch": "Run the unit tests in watch mode.",
+    "info": "Print this info."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^20.0.4",
+    "jest": "^20.0.4",
+    "npm-scripts-info": "^0.3.6",
+    "rimraf": "^2.6.1",
+    "ts-jest": "^20.0.7",
+    "typescript": "^2.4.1"
+  }
+}
