@@ -31,8 +31,8 @@
     "prepublish": "npm run clean && npm run build"
   },
   "scripts-info": {
-    "build": "Builds the project.",
-    "clean": "Cleans the build directory.",
+    "build": "Build the project.",
+    "clean": "Clean the build directory.",
     "test": "Run the unit tests once with code coverage.",
     "watch": "Run the unit tests in watch mode.",
     "info": "Print this info."
@@ -40,6 +40,7 @@
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^20.0.4",
+    "@types/node": "^8.0.14",
     "jest": "^20.0.4",
     "npm-scripts-info": "^0.3.6",
     "rimraf": "^2.6.1",

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "lib": [
+      "es2015"
+    ],
+    "noEmit": true,
+    "paths": {
+      "cancellationtoken": ["../src"]
+    },
+    "sourceMap": true,
+    "strict": true,
+    "target": "es5"
+  }
+}
+
