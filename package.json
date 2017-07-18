@@ -1,6 +1,6 @@
 {
   "name": "cancellationtoken",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A composable token for cancelling asynchronous operations.",
   "author": "Conrad Reuter <jacob.conrad.reuter@gmail.com>",
   "license": "MIT",
