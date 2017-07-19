@@ -30,8 +30,7 @@ interface CancellationToken {
   throwIfCancelled(): void
 }
 
-/* istanbul ignore next: namespaces not handled correctly by jest */
-namespace CancellationToken {
+module CancellationToken {
 
   /**
    * A cancellation token that is never cancelled.
@@ -119,7 +118,7 @@ namespace CancellationToken {
        */
       public readonly reason: any
     ) {
-      super(`Operation cancelled (${JSON.stringify(reason)})`)
+      super(`Operation cancelled (${JSON.stringify(reason)})`) /* istanbul ignore next: see https://github.com/gotwarlost/istanbul/issues/690 */
       Object.setPrototypeOf(this, Cancelled.prototype)
     }
   }

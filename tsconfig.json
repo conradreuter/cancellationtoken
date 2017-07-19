@@ -6,7 +6,6 @@
     ],
     "module": "commonjs",
     "outDir": "dist/",
-    "removeComments": true,
     "sourceMap": true,
     "strict": true,
     "target": "es5"

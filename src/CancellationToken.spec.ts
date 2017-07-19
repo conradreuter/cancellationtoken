@@ -61,6 +61,10 @@ describe('A cancellation token', () => {
     it('should not throw an error when throwIfCancelled is called and the token is not cancelled', () => {
       token.throwIfCancelled() // should not throw
     })
+
+    it('should throw an error when accessing the reason before the token is cancelled', () => {
+      expect(() => token.reason).toThrow()
+    })
   })
 
   describe('that was created via all', () => {
