@@ -40,5 +40,5 @@ function task1() {
 }
 
 function task2() {
-  console.log("nay! ):")
+  throw new Error("nay! ):")
 }

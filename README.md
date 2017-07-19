@@ -35,6 +35,10 @@ cancel()
 console.log(token.isCancelled) // prints true
 ```
 
+## Documentation
+
+Coming soon! Meanwhile you can use the TypeScript definitions.
+
 ## Examples
 
 For usage examples have a look at the `examples/` directory.
