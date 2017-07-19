@@ -5,8 +5,9 @@ describe('A cancellation token', () => {
 
   describe('that was created independently', () => {
 
-    let cancel: () => void
+    let cancel: (reason: any) => void
     let token: CancellationToken
+    const reason = {}
 
     beforeEach(() => {
       ;({ cancel, token } = CancellationToken.create())
@@ -17,18 +18,25 @@ describe('A cancellation token', () => {
     })
 
     it('should cancel correctly', () => {
-      cancel()
+      cancel(reason)
       expect(token.isCancelled).toBe(true)
+      expect(token.reason).toBe(reason)
     })
 
     it('should resolve its promise upon cancellation', () => {
-      cancel()
-      return token.whenCancelled
+      cancel(reason)
+      expect(token.whenCancelled).resolves.toBe(reason)
     })
 
     it('should throw a CancelledError when throwIfCancelled is called and the token is cancelled', () => {
-      cancel()
-      expect(() => token.throwIfCancelled()).toThrow(CancellationToken.Cancelled)
+      cancel(reason)
+      try {
+        token.throwIfCancelled()
+        fail('Expected CancellationToken.Cancelled to be thrown')
+      } catch (err) {
+        expect(err).toBeInstanceOf(CancellationToken.Cancelled)
+        expect(err.reason).toBe(reason)
+      }
     })
 
     it('should not throw an error when throwIfCancelled is called and the token is not cancelled', () => {
@@ -38,11 +46,13 @@ describe('A cancellation token', () => {
 
   describe('that was created via all', () => {
 
-    let cancel1: () => void
-    let cancel2: () => void
+    let cancel1: (reason: any) => void
+    let cancel2: (reason: any) => void
     let token1: CancellationToken
     let token2: CancellationToken
     let token: CancellationToken
+    const reason1 = {}
+    const reason2 = {}
 
     beforeEach(() => {
       ;({ cancel: cancel1, token: token1 } = CancellationToken.create())
@@ -51,46 +61,53 @@ describe('A cancellation token', () => {
     })
 
     it('should be cancelled when all of the given tokens are cancelled', () => {
-      cancel1()
-      cancel2()
+      cancel1(reason1)
+      cancel2(reason2)
       expect(token.isCancelled).toBe(true)
+      expect(token.reason).toHaveLength(2)
+      expect(token.reason).toEqual(expect.arrayContaining([reason1, reason2]))
     })
 
     it('should not be cancelled when some of the given tokens are not cancelled', () => {
-      cancel1()
+      cancel1(reason1)
       expect(token.isCancelled).toBe(false)
     })
 
     it('should resolve its promise when all of the given tokens are cancelled', () => {
-      cancel1()
-      cancel2()
-      return token.whenCancelled
+      cancel1(reason1)
+      cancel2(reason2)
+      expect(token.whenCancelled).resolves.toHaveLength(2)
+      expect(token.whenCancelled).resolves.toEqual(expect.arrayContaining([reason1, reason2]))
     })
 
     it('should be cancelled immediately after creation if all of the given tokens are already cancelled', () => {
-      cancel1()
-      cancel2()
-      expect(CancellationToken.all(token1, token2).isCancelled).toBe(true)
+      cancel1(reason1)
+      cancel2(reason1)
+      const token = CancellationToken.all(token1, token2)
+      expect(token.isCancelled).toBe(true)
+      expect(token.reason).toHaveLength(2)
+      expect(token.reason).toEqual(expect.arrayContaining([reason1, reason2])
     })
   })
 
   describe('that was created via race', () => {
 
-    let cancel1: () => void
-    let cancel2: () => void
+    let cancel1: (reason: any) => void
     let token1: CancellationToken
     let token2: CancellationToken
     let token: CancellationToken
+    const reason = {}
 
     beforeEach(() => {
       ;({ cancel: cancel1, token: token1 } = CancellationToken.create())
-      ;({ cancel: cancel2, token: token2 } = CancellationToken.create())
+      ;({ token: token2 } = CancellationToken.create())
       token = CancellationToken.race(token1, token2)
     })
 
     it('should be cancelled when at least one of the given tokens is cancelled', () => {
-      cancel1()
+      cancel1(reason)
       expect(token.isCancelled).toBe(true)
+      expect(token.reason).toBe(reason)
     })
 
     it('should not be cancelled when none of the given tokens are cancelled', () => {
@@ -98,13 +115,15 @@ describe('A cancellation token', () => {
     })
 
     it('should resolve its promise when at least one of the given tokens is cancelled', () => {
-      cancel1()
-      return token.whenCancelled
+      cancel1(reason)
+      expect(token.whenCancelled).resolves.toBe(reason)
     })
 
     it('should be cancelled immediately after creation if one of the given tokens is already cancelled', () => {
-      cancel1()
-      expect(CancellationToken.race(token1, token2).isCancelled).toBe(true)
+      cancel1(reason)
+      const token = CancellationToken.race(token1, token2)
+      expect(token.isCancelled).toBe(true)
+      expect(token.reason).toBe(reason)
     })
   })
 })

@@ -2,42 +2,27 @@
  * A token that can be passed around to inform consumers of the token that a
  * certain operation has been cancelled.
  */
-class CancellationToken {
-
-  /**
-   * Create a new {CancellationToken}.
-   *
-   * @param isCancelled A function determining if the token is cancelled.
-   * @param whenCancelled A promise that will be resolved when the token is cancelled.
-   */
-  public constructor(
-    private readonly _isCancelled: () => boolean,
-    private readonly _whenCancelled: Promise<void>,
-  ) {
-  }
+interface CancellationToken {
 
   /**
    * Whether the token is cancelled.
    */
-  public get isCancelled(): boolean {
-    return this._isCancelled()
-  }
+  readonly isCancelled: boolean
 
   /**
-   * A promise that will be resolved when this token is cancelled.
+   * The reason why this token has been cancelled.
    */
-  public get whenCancelled(): Promise<void> {
-    return this._whenCancelled
-  }
+  readonly reason: any
+
+  /**
+   * A promise that will be resolved with the reason when this token is cancelled.
+   */
+  readonly whenCancelled: Promise<any>
 
   /**
    * Throw a {CancelledError} if this token is cancelled.
    */
-  public throwIfCancelled(): void {
-    if (this.isCancelled) {
-      throw new CancellationToken.Cancelled()
-    }
-  }
+  throwIfCancelled(): void
 }
 
 /* istanbul ignore next: namespaces not handled correctly by jest */
@@ -56,7 +41,7 @@ namespace CancellationToken {
    */
   export const CANCEL: CancellationToken = (() => {
     const { cancel, token } = create()
-    cancel()
+    cancel('CANCEL')
     return token
   })()
 
@@ -65,16 +50,22 @@ namespace CancellationToken {
    *
    * @returns the cancellation token and a function to cancel it.
    */
-  export function create(): { token: CancellationToken, cancel: () => void } {
+  export function create(): { token: CancellationToken, cancel: (reason?: any) => void } {
     let isCancelled: boolean = false
     let cancel: any // cannot use correct type here, because of "used before assigned" error
-    const whenCancelled = new Promise<void>(resolve => {
-      cancel = () => {
+    let reason: any
+    const whenCancelled = new Promise<any>(resolve => {
+      cancel = (_reason?: any) => {
         isCancelled = true
-        resolve()
+        reason = _reason
+        resolve(reason)
       }
     })
-    const token = new CancellationToken(() => isCancelled, whenCancelled)
+    const token = createCancellationToken(
+      () => isCancelled,
+      () => reason,
+      whenCancelled,
+    )
     return { cancel, token }
   }
 
@@ -87,9 +78,11 @@ namespace CancellationToken {
    * @returns a token that depends on the given tokens.
    */
   export function all(...tokens: CancellationToken[]): CancellationToken {
-    const isCancelled = () => tokens.every(token => token.isCancelled)
-    const whenCancelled = Promise.all(tokens.map(token => token.whenCancelled)) as Promise<any>
-    return new CancellationToken(isCancelled, whenCancelled)
+    return createCancellationToken(
+      () => tokens.every(token => token.isCancelled),
+      () => tokens.map(token => token.reason),
+      Promise.all(tokens.map(token => token.whenCancelled)),
+    )
   }
 
   /**
@@ -101,9 +94,11 @@ namespace CancellationToken {
    * @returns a token that depends on the given tokens.
    */
   export function race(...tokens: CancellationToken[]): CancellationToken {
-    const isCancelled = () => tokens.some(token => token.isCancelled)
-    const whenCancelled = Promise.race(tokens.map(token => token.whenCancelled))
-    return new CancellationToken(isCancelled, whenCancelled)
+    return createCancellationToken(
+      () => tokens.some(token => token.isCancelled),
+      () => tokens.find(token => token.isCancelled)!.reason,
+      Promise.race(tokens.map(token => token.whenCancelled)),
+    )
   }
 
   /**
@@ -112,9 +107,64 @@ namespace CancellationToken {
    */
   export class Cancelled extends Error {
 
-    public constructor() {
-      super('Operation cancelled')
+    public constructor(
+
+      /**
+       * The reason why the token was cancelled.
+       */
+      public readonly reason: any
+    ) {
+      super(`Operation cancelled (${reason})`)
       Object.setPrototypeOf(this, Cancelled.prototype)
+    }
+  }
+}
+
+/**
+ * Create a {CancellationToken}.
+ *
+ * @param isCancelled Whether the token was cancelled.
+ * @param reason The reason why the token was cancelled.
+ * @param whenCancelled A promise that will be resolved with the reason.
+ * @returns a new cancellation token.
+ */
+function createCancellationToken(
+  isCancelled: () => boolean,
+  reason: () => any,
+  whenCancelled: Promise<any>
+): CancellationToken {
+  let cache = {
+    isCancelled: false,
+    reason: undefined,
+    update() {
+      if (this.isCancelled) return
+      if (isCancelled()) {
+        this.isCancelled = true
+        this.reason = reason()
+      }
+    }
+  }
+  cache.update()
+  return {
+    get isCancelled(): boolean {
+      cache.update()
+      return cache.isCancelled
+    },
+    get reason(): any {
+      cache.update()
+      if (!cache.isCancelled) {
+        throw new Error('CancellationToken is not cancelled')
+      }
+      return cache.reason
+    },
+    get whenCancelled(): Promise<any> {
+      return whenCancelled
+    },
+    throwIfCancelled(): void {
+      cache.update()
+      if (cache.isCancelled) {
+        throw new CancellationToken.Cancelled(cache.reason)
+      }
     }
   }
 }
