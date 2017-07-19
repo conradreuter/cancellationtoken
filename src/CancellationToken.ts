@@ -20,12 +20,12 @@ interface CancellationToken {
   readonly whenCancelled: Promise<any>
 
   /**
-   * Create a promise that will be rejected with a {CancelledError} when this token is cancelled.
+   * Create a promise that will be rejected with a {CancellationToken.Cancelled} instance when this token is cancelled.
    */
   rejectWhenCancelled(): Promise<void>
 
   /**
-   * Throw a {CancelledError} if this token is cancelled.
+   * Throw a {CancellationToken.Cancelled} instance if this token is cancelled.
    */
   throwIfCancelled(): void
 }
