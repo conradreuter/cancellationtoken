@@ -28,6 +28,17 @@ describe('A cancellation token', () => {
       expect(token.whenCancelled).resolves.toBe(reason)
     })
 
+    it('should reject a promise created via rejectWhenCancelled upon cancellation', async () => {
+      cancel(reason)
+      try {
+        await token.rejectWhenCancelled()
+        fail('Expected CancellationToken.Cancelled to be thrown')
+      } catch (err) {
+        expect(err).toBeInstanceOf(CancellationToken.Cancelled)
+        expect(err.reason).toBe(reason)
+      }
+    })
+
     it('should throw a CancelledError when throwIfCancelled is called and the token is cancelled', () => {
       cancel(reason)
       try {
@@ -37,6 +48,14 @@ describe('A cancellation token', () => {
         expect(err).toBeInstanceOf(CancellationToken.Cancelled)
         expect(err.reason).toBe(reason)
       }
+    })
+
+    // TODO test for unhandled promise rejection warning
+    it('should not reject a promise created with rejectWhenCancelled when the token is not cancelled', () => {
+      return new Promise((resolve, reject) => {
+        setTimeout(resolve, 500)
+        token.rejectWhenCancelled().catch(reject)
+      })
     })
 
     it('should not throw an error when throwIfCancelled is called and the token is not cancelled', () => {

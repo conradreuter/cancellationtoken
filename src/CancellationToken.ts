@@ -20,6 +20,11 @@ interface CancellationToken {
   readonly whenCancelled: Promise<any>
 
   /**
+   * Create a promise that will be rejected with a {CancelledError} when this token is cancelled.
+   */
+  rejectWhenCancelled(): Promise<void>
+
+  /**
    * Throw a {CancelledError} if this token is cancelled.
    */
   throwIfCancelled(): void
@@ -114,7 +119,7 @@ namespace CancellationToken {
        */
       public readonly reason: any
     ) {
-      super(`Operation cancelled (${reason})`)
+      super(`Operation cancelled (${JSON.stringify(reason)})`)
       Object.setPrototypeOf(this, Cancelled.prototype)
     }
   }
@@ -159,6 +164,11 @@ function createCancellationToken(
     },
     get whenCancelled(): Promise<any> {
       return whenCancelled
+    },
+    rejectWhenCancelled(): Promise<void> {
+      return whenCancelled.then(reason => {
+        throw new CancellationToken.Cancelled(reason)
+      })
     },
     throwIfCancelled(): void {
       cache.update()

@@ -1,11 +1,11 @@
 {
-  "transform": {
-    ".ts": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-  },
-  "testRegex": "\\.spec\\.ts$",
+  "mapCoverage": true,
   "moduleFileExtensions": [
     "js",
     "ts"
   ],
-  "mapCoverage": true
+  "testRegex": "\\.spec\\.ts$",
+  "transform": {
+    ".ts": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+  }
 }
