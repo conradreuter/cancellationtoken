@@ -1,8 +1,8 @@
 # Cancellation Token
 
-Cancellation tokens are composable entities that allow cancelling asynchronous operations.
-
 [![npm](https://img.shields.io/npm/v/cancellationtoken.svg?style=flat-square)](https://www.npmjs.com/package/cancellationtoken)
+
+Cancellation tokens are composable entities that allow cancelling asynchronous operations.
 
 The implementation roughly follows these TC39 proposals:
 - https://github.com/tc39/proposal-cancellation
