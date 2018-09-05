@@ -207,6 +207,16 @@ describe('The CONTINUE cancellation token', () => {
   it('is not cancelled', () => {
     expect(CancellationToken.CONTINUE.isCancelled).toBe(false)
   })
+
+  it('does not leak', () => {
+    // Since this promise never resolves or rejects, it by definition is long-lived.
+    // Any continuations to it should be immediately dropped rather than being stored,
+    // forever leaking unbounded memory.
+    for (var i = 0; i < 100000; i++) {
+      CancellationToken.CONTINUE.whenCancelled.then(() => { })
+      CancellationToken.CONTINUE.whenCancelled.catch(() => { })
+    }
+  });
 })
 
 describe('The CANCEL cancellation token', () => {
