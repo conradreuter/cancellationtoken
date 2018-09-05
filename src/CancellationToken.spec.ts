@@ -1,6 +1,15 @@
 import 'jest'
 import CancellationToken from './CancellationToken'
 
+/**
+ * The number of iterations to run a loop that allocates memory that
+ * should be released in each iteration.
+ * @description This number is large enough that a leak will cause the test
+ * to take a VERY long time due to constant GC (or crash from OOM).
+ * It's also small enough for the test to pass quickly if there is no leak.
+ */
+const LEAK_LOOP_COUNT = 100000;
+
 describe('A cancellation token', () => {
 
   describe('that was created independently', () => {
@@ -153,14 +162,14 @@ describe('A cancellation token', () => {
   describe('that is long-lived', () => {
     it('does not leak resolving promises', async () => {
      const { token, cancel } = CancellationToken.create()
-     for (let i = 0; i < 1 * 1024 * 1024; i++) {
+     for (let i = 0; i < LEAK_LOOP_COUNT; i++) {
        await longLivedOperation_whenCanceled(token)
      }
     })
 
     it('does not leak rejecting promises', async () => {
       const { token, cancel } = CancellationToken.create()
-      for (let i = 0; i < 1 * 1024 * 1024; i++) {
+      for (let i = 0; i < LEAK_LOOP_COUNT; i++) {
         await longLivedOperation_rejectWhenCancelled(token)
       }
     })
@@ -212,7 +221,7 @@ describe('The CONTINUE cancellation token', () => {
     // Since this promise never resolves or rejects, it by definition is long-lived.
     // Any continuations to it should be immediately dropped rather than being stored,
     // forever leaking unbounded memory.
-    for (var i = 0; i < 100000; i++) {
+    for (var i = 0; i < LEAK_LOOP_COUNT; i++) {
       CancellationToken.CONTINUE.whenCancelled.then(() => { })
       CancellationToken.CONTINUE.whenCancelled.catch(() => { })
     }
