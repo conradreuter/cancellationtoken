@@ -149,6 +149,35 @@ describe('A cancellation token', () => {
       expect(token.reason).toBe(reason)
     })
   })
+
+  describe('that is long-lived', () => {
+    it('does not leak resolving promises', async () => {
+      const { token, cancel } = CancellationToken.create()
+      for (let i = 0; i < 1 * 1024 * 1024; i++) {
+        await longLivedOperation(token)
+      }
+    })
+
+    function longLivedOperation(token: CancellationToken): Promise<void> {
+      token.throwIfCancelled()
+
+      var fulfillPromise: () => void
+      var cancelPromise: (reason?: any) => void
+      const promise = new Promise<void>((resolve, reject) => {
+        fulfillPromise = resolve
+        cancelPromise = reject
+      })
+
+      token.whenCancelled.then((reason) => cancelPromise(reason))
+      someAsyncOp(fulfillPromise)
+      return promise
+    }
+
+    function someAsyncOp(cb: () => void) {
+      // This is just a mock to demonstrate the use case. Just callback immediately.
+      cb()
+    }
+  })
 })
 
 describe('The CONTINUE cancellation token', () => {
