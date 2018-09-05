@@ -3,7 +3,6 @@
  * certain operation has been cancelled.
  */
 interface CancellationToken {
-
   /**
    * Whether the token is cancelled.
    */
@@ -30,8 +29,7 @@ interface CancellationToken {
   throwIfCancelled(): void
 }
 
-module CancellationToken {
-
+namespace CancellationToken {
   /**
    * A cancellation token that is never cancelled.
    */
@@ -54,7 +52,7 @@ module CancellationToken {
    *
    * @returns the cancellation token and a function to cancel it.
    */
-  export function create(): { token: CancellationToken, cancel: (reason?: any) => void } {
+  export function create(): { token: CancellationToken; cancel: (reason?: any) => void } {
     let isCancelled: boolean = false
     let cancel: any // cannot use correct type here, because of "used before assigned" error
     let reason: any
@@ -65,11 +63,7 @@ module CancellationToken {
         resolve(reason)
       }
     })
-    const token = createCancellationToken(
-      () => isCancelled,
-      () => reason,
-      whenCancelled,
-    )
+    const token = createCancellationToken(() => isCancelled, () => reason, whenCancelled)
     return { cancel, token }
   }
 
@@ -110,15 +104,15 @@ module CancellationToken {
    * consumer of the token calls {CancellationToken.throwIfCancelled} on it.
    */
   export class Cancelled extends Error {
-
     public constructor(
-
       /**
        * The reason why the token was cancelled.
        */
-      public readonly reason: any
+      public readonly reason: any,
     ) {
-      super(`Operation cancelled (${JSON.stringify(reason)})`) /* istanbul ignore next: see https://github.com/gotwarlost/istanbul/issues/690 */
+      super(
+        `Operation cancelled (${JSON.stringify(reason)})`,
+      ) /* istanbul ignore next: see https://github.com/gotwarlost/istanbul/issues/690 */
       Object.setPrototypeOf(this, Cancelled.prototype)
     }
   }
@@ -135,7 +129,7 @@ module CancellationToken {
 function createCancellationToken(
   isCancelled: () => boolean,
   reason: () => any,
-  whenCancelled: Promise<any>
+  whenCancelled: Promise<any>,
 ): CancellationToken {
   let cache = {
     isCancelled: false,
@@ -146,7 +140,7 @@ function createCancellationToken(
         this.isCancelled = true
         this.reason = reason()
       }
-    }
+    },
   }
   cache.update()
   return {
@@ -174,7 +168,7 @@ function createCancellationToken(
       if (cache.isCancelled) {
         throw new CancellationToken.Cancelled(cache.reason)
       }
-    }
+    },
   }
 }
 

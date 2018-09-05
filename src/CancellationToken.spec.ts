@@ -2,9 +2,7 @@ import 'jest'
 import CancellationToken from './CancellationToken'
 
 describe('A cancellation token', () => {
-
   describe('that was created independently', () => {
-
     let cancel: (reason: any) => void
     let token: CancellationToken
     const reason = {}
@@ -68,7 +66,6 @@ describe('A cancellation token', () => {
   })
 
   describe('that was created via all', () => {
-
     let cancel1: (reason: any) => void
     let cancel2: (reason: any) => void
     let token1: CancellationToken
@@ -109,12 +106,11 @@ describe('A cancellation token', () => {
       const token = CancellationToken.all(token1, token2)
       expect(token.isCancelled).toBe(true)
       expect(token.reason).toHaveLength(2)
-      expect(token.reason).toEqual(expect.arrayContaining([reason1, reason2])
+      expect(token.reason).toEqual(expect.arrayContaining([reason1, reason2]))
     })
   })
 
   describe('that was created via race', () => {
-
     let cancel1: (reason: any) => void
     let token1: CancellationToken
     let token2: CancellationToken
@@ -152,14 +148,12 @@ describe('A cancellation token', () => {
 })
 
 describe('The CONTINUE cancellation token', () => {
-
   it('is not cancelled', () => {
     expect(CancellationToken.CONTINUE.isCancelled).toBe(false)
   })
 })
 
 describe('The CANCEL cancellation token', () => {
-
   it('is cancelled', () => {
     expect(CancellationToken.CANCEL.isCancelled).toBe(true)
   })

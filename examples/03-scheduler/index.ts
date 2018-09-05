@@ -1,8 +1,7 @@
 import CancellationToken from 'cancellationtoken'
 
 class Scheduler {
-
-  private readonly tasks: { task: Task, token: CancellationToken }[]
+  private readonly tasks: { task: Task; token: CancellationToken }[]
 
   public constructor() {
     this.tasks = []
@@ -35,10 +34,10 @@ scheduler.schedule(task2, token)
 scheduler.schedule(() => process.exit(0))
 
 function task1() {
-  console.log("yay! (:")
+  console.log('yay! (:')
   cancel()
 }
 
 function task2() {
-  throw new Error("nay! ):")
+  throw new Error('nay! ):')
 }
