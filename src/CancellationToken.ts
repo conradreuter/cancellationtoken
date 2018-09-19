@@ -62,7 +62,7 @@ class CancellationToken {
   /**
    * Throw a {CancellationToken.CancellationError} instance if this token is cancelled.
    */
-  public throwIfCancelled(): void {
+  public throwIfCancellationRequested(): void {
     if (this.isCancelled) {
       throw new CancellationToken.CancellationError(this.reason);
     }

@@ -63,10 +63,10 @@ describe('A cancellation token', () => {
       cancel(reason);
     });
 
-    it('should throw a CancelledError when throwIfCancelled is called and the token is cancelled', () => {
+    it('should throw a CancelledError when throwIfCancellationRequested is called and the token is cancelled', () => {
       cancel(reason);
       try {
-        token.throwIfCancelled();
+        token.throwIfCancellationRequested();
         fail('Expected CancellationToken.Cancelled to be thrown');
       } catch (err) {
         expect(err).toBeInstanceOf(CancellationToken.CancellationError);
@@ -74,8 +74,8 @@ describe('A cancellation token', () => {
       }
     });
 
-    it('should not throw an error when throwIfCancelled is called and the token is not cancelled', () => {
-      token.throwIfCancelled(); // should not throw
+    it('should not throw an error when throwIfCancellationRequested is called and the token is not cancelled', () => {
+      token.throwIfCancellationRequested(); // should not throw
     })
 
     it('should throw an error when accessing the reason before the token is cancelled', () => {
@@ -213,7 +213,7 @@ describe('A cancellation token', () => {
     });
 
     async function someOperationAsync(token: CancellationToken): Promise<void> {
-      token.throwIfCancelled();
+      token.throwIfCancellationRequested();
 
       let timer: NodeJS.Timer;
       let rejectPromise: (reason?: any) => void;
@@ -239,7 +239,7 @@ describe('A cancellation token', () => {
     });
 
     async function someFastOperationAsync(token: CancellationToken): Promise<void> {
-      token.throwIfCancelled();
+      token.throwIfCancellationRequested();
 
       let rejectPromise: (reason?: any) => void;
 
