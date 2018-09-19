@@ -38,7 +38,7 @@ class CancellationToken {
    * Returns a promise that resolves when some operation resolves,
    * or rejects when the operation is rejected or this token is canceled.
    */
-  public or<T>(operation: Promise<T>): Promise<T> {
+  public racePromise<T>(operation: Promise<T>): Promise<T> {
     if (this.canBeCancelled) {
       return new Promise<T>((resolve, reject) => {
         const unregister = this.onCancellationRequested(reason => {

@@ -86,7 +86,7 @@ describe('A cancellation token', () => {
       const promise = new Promise<number>((resolve) => {
         setTimeout(resolve(5), 1);
       });
-      const result = await token.or(promise);
+      const result = await token.racePromise(promise);
       expect(result).toEqual(5);
     });
 
@@ -95,7 +95,7 @@ describe('A cancellation token', () => {
         setTimeout(reject('oops'), 1);
       });
       try {
-        await token.or(promise);
+        await token.racePromise(promise);
         fail("Expected exception not thrown.");
       }
       catch (err) {
@@ -109,7 +109,7 @@ describe('A cancellation token', () => {
         cancel(reason);
       }, 10);
       try {
-        await token.or(promise);
+        await token.racePromise(promise);
         fail("expected error not thrown.");
       } catch (err) {
         expect(err).toBeInstanceOf(CancellationToken.CancellationError);
@@ -275,7 +275,7 @@ describe('The CONTINUE cancellation token', () => {
 
   it('does not leak from or with completed promise', () => {
     for (var i = 0; i < LEAK_LOOP_COUNT; i++) {
-      CancellationToken.CONTINUE.or(Promise.resolve());
+      CancellationToken.CONTINUE.racePromise(Promise.resolve());
     }
   });
 })
