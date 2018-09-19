@@ -1,20 +1,13 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "lib": [
-      "es2015"
-    ],
+    "lib": ["es2015"],
     "module": "commonjs",
     "outDir": "dist/",
     "sourceMap": true,
     "strict": true,
     "target": "es5"
   },
-  "include": [
-    "src/index.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
-  ]
+  "include": ["src/index.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }

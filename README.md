@@ -5,6 +5,7 @@
 Cancellation tokens are composable entities that allow cancelling asynchronous operations.
 
 The implementation roughly follows these TC39 proposals:
+
 - https://github.com/tc39/proposal-cancellation
 - https://github.com/tc39/proposal-cancelable-promises
 
@@ -15,9 +16,11 @@ The implementation is written in TypeScript and therefore comes with typings alr
 Install the library via your favourite package manager.
 
 ```
-npm install cancellationtoken --save
+npm install cancellationtoken
 ```
+
 or
+
 ```
 yarn add cancellationtoken
 ```
@@ -49,7 +52,9 @@ npm install
 npm run example 01-tutorial
 npm run example <name>
 ```
+
 or
+
 ```
 cd examples/
 yarn

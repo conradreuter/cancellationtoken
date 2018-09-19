@@ -1,6 +1,8 @@
+.vscode/
 coverage/
 examples/
 src/
 .gitignore
+.prettierrc
 jest.json
 tsconfig.json

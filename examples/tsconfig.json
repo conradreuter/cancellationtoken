@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "lib": [
-      "dom",
-      "es2015"
-    ],
+    "lib": ["dom", "es2015"],
     "noEmit": true,
     "paths": {
       "cancellationtoken": ["../src"]
@@ -14,4 +11,3 @@
     "target": "es5"
   }
 }
-
