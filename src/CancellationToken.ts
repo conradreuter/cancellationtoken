@@ -19,15 +19,15 @@ class CancellationToken {
   /**
    * Gets a value indicating whether the token has been cancelled.
    */
-  public get isCancellationRequested(): boolean {
-    return this.isCancelled;
+  public get isCancelled(): boolean {
+    return this._isCancelled;
   }
 
   /**
    * Gets the reason why this token has been cancelled.
    */
   public get reason(): any {
-    if (this.isCancellationRequested) {
+    if (this.isCancelled) {
       return this._reason;
     } else {
       throw new Error("This token is not canceled.");
@@ -41,7 +41,7 @@ class CancellationToken {
   public racePromise<T>(operation: Promise<T>): Promise<T> {
     if (this.canBeCancelled) {
       return new Promise<T>((resolve, reject) => {
-        const unregister = this.onCancellationRequested(reason => {
+        const unregister = this.onCancelled(reason => {
           reject(new CancellationToken.CancellationError(reason));
         });
         operation.then(
@@ -62,8 +62,8 @@ class CancellationToken {
   /**
    * Throw a {CancellationToken.CancellationError} instance if this token is cancelled.
    */
-  public throwIfCancellationRequested(): void {
-    if (this.isCancelled) {
+  public throwIfCancelled(): void {
+    if (this._isCancelled) {
       throw new CancellationToken.CancellationError(this.reason);
     }
   }
@@ -74,9 +74,9 @@ class CancellationToken {
    * @param cb The method to invoke when cancellation occurs, with the reason.
    * @returns A method that revokes the request for notification.
    */
-  public onCancellationRequested(cb: (reason?: any) => void): () => void {
+  public onCancelled(cb: (reason?: any) => void): () => void {
     if (this.canBeCancelled) {
-      if (this.isCancellationRequested) {
+      if (this.isCancelled) {
         cb(this.reason);
       } else {
         this._callbacks.push(cb);
@@ -96,7 +96,7 @@ class CancellationToken {
     /**
      * Whether the token is already canceled.
      */
-    private isCancelled: boolean,
+    private _isCancelled: boolean,
 
     /**
      * Whether the token can be cancelled.
@@ -113,7 +113,7 @@ class CancellationToken {
     return {
       token: token,
       cancel: (reason?: any) => {
-        token.isCancelled = true;
+        token._isCancelled = true;
         token._reason = reason;
         token._callbacks.forEach(cb => {
           try {
@@ -150,10 +150,10 @@ class CancellationToken {
         return CancellationToken.CONTINUE;
       }
 
-      if (token.isCancelled) {
+      if (token._isCancelled) {
         onCountdown();
       } else {
-        token.onCancellationRequested(onCountdown);
+        token.onCancelled(onCountdown);
       }
     };
 
@@ -170,7 +170,7 @@ class CancellationToken {
    */
   public static race(...tokens: CancellationToken[]): CancellationToken {
     for (const token of tokens) {
-      if (token.isCancelled) {
+      if (token._isCancelled) {
         return token;
       }
     }
@@ -182,7 +182,7 @@ class CancellationToken {
       unregistrations.forEach(unregister => unregister());
       cts.cancel(reason);
     };
-    unregistrations = tokens.map(token => token.onCancellationRequested(cb));
+    unregistrations = tokens.map(token => token.onCancelled(cb));
     return cts.token;
   }
 }

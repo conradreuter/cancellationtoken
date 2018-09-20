@@ -27,17 +27,17 @@ describe('A cancellation token', () => {
     });
 
     it('should not be cancelled immediately after creation', () => {
-      expect(token.isCancellationRequested).toBe(false);
+      expect(token.isCancelled).toBe(false);
     });
 
     it('should cancel correctly', () => {
       cancel(reason);
-      expect(token.isCancellationRequested).toBe(true);
+      expect(token.isCancelled).toBe(true);
       expect(token.reason).toBe(reason);
     });
 
     it('should execute registered handlers upon cancellation', (done) => {
-      token.onCancellationRequested((actualReason) => {
+      token.onCancelled((actualReason) => {
         expect(actualReason).toBe(reason);
         done();
       });
@@ -47,7 +47,7 @@ describe('A cancellation token', () => {
     it('should execute registered handlers immediately if canceled', () => {
       cancel(reason);
       let cbInvoked = false;
-      const unregister = token.onCancellationRequested((actualReason) => {
+      const unregister = token.onCancelled((actualReason) => {
         expect(actualReason).toBe(reason);
         cbInvoked = true;
       });
@@ -56,7 +56,7 @@ describe('A cancellation token', () => {
     });
 
     it('should not execute registered and removed handlers upon cancellation', () => {
-      const disposeHandler = token.onCancellationRequested((actualReason) => {
+      const disposeHandler = token.onCancelled((actualReason) => {
         fail("Unexpected callback of disposed handler.");
       });
       disposeHandler();
@@ -66,7 +66,7 @@ describe('A cancellation token', () => {
     it('should throw a CancelledError when throwIfCancellationRequested is called and the token is cancelled', () => {
       cancel(reason);
       try {
-        token.throwIfCancellationRequested();
+        token.throwIfCancelled();
         fail('Expected CancellationToken.Cancelled to be thrown');
       } catch (err) {
         expect(err).toBeInstanceOf(CancellationToken.CancellationError);
@@ -75,7 +75,7 @@ describe('A cancellation token', () => {
     });
 
     it('should not throw an error when throwIfCancellationRequested is called and the token is not cancelled', () => {
-      token.throwIfCancellationRequested(); // should not throw
+      token.throwIfCancelled(); // should not throw
     })
 
     it('should throw an error when accessing the reason before the token is cancelled', () => {
@@ -138,21 +138,21 @@ describe('A cancellation token', () => {
       // Cancel in reverse order to test that the reason array is ordered per the original `all` array.
       cancel2(reason2);
       cancel1(reason1);
-      expect(token.isCancellationRequested).toBe(true);
+      expect(token.isCancelled).toBe(true);
       expect(token.reason).toHaveLength(2);
       expect(token.reason).toEqual(expect.arrayContaining([reason1, reason2]));
     });
 
     it('should not be cancelled when some of the given tokens are not cancelled', () => {
       cancel1(reason1);
-      expect(token.isCancellationRequested).toBe(false);
+      expect(token.isCancelled).toBe(false);
     });
 
     it('should be cancelled immediately after creation if all of the given tokens are already cancelled', () => {
       cancel1(reason1);
       cancel2(reason2);
       const token = CancellationToken.all(token1, token2);
-      expect(token.isCancellationRequested).toBe(true);
+      expect(token.isCancelled).toBe(true);
       expect(token.reason).toHaveLength(2);
       expect(token.reason).toEqual(expect.arrayContaining([reason1, reason2]));
     });
@@ -180,18 +180,18 @@ describe('A cancellation token', () => {
 
     it('should be cancelled when at least one of the given tokens is cancelled', () => {
       cancel1(reason);
-      expect(token.isCancellationRequested).toBe(true);
+      expect(token.isCancelled).toBe(true);
       expect(token.reason).toBe(reason);
     });
 
     it('should not be cancelled when none of the given tokens are cancelled', () => {
-      expect(token.isCancellationRequested).toBe(false);
+      expect(token.isCancelled).toBe(false);
     });
 
     it('should be cancelled immediately after creation if one of the given tokens is already cancelled', () => {
       cancel1(reason);
       token = CancellationToken.race(token1, token2);
-      expect(token.isCancellationRequested).toBe(true);
+      expect(token.isCancelled).toBe(true);
       expect(token.reason).toBe(reason);
     });
 
@@ -199,7 +199,7 @@ describe('A cancellation token', () => {
       cancel1(reason);
       cancel2({});
       token = CancellationToken.race(token1, token2);
-      expect(token.isCancellationRequested).toBe(true);
+      expect(token.isCancelled).toBe(true);
       expect(token.reason).toBe(reason);
     });
   });
@@ -213,12 +213,12 @@ describe('A cancellation token', () => {
     });
 
     async function someOperationAsync(token: CancellationToken): Promise<void> {
-      token.throwIfCancellationRequested();
+      token.throwIfCancelled();
 
       let timer: NodeJS.Timer;
       let rejectPromise: (reason?: any) => void;
 
-      const unregister = token.onCancellationRequested((reason) => {
+      const unregister = token.onCancelled((reason) => {
         clearTimeout(timer);
         rejectPromise(new CancellationToken.CancellationError(reason));
       });
@@ -239,11 +239,11 @@ describe('A cancellation token', () => {
     });
 
     async function someFastOperationAsync(token: CancellationToken): Promise<void> {
-      token.throwIfCancellationRequested();
+      token.throwIfCancelled();
 
       let rejectPromise: (reason?: any) => void;
 
-      const unregister = token.onCancellationRequested((reason) => {
+      const unregister = token.onCancelled((reason) => {
         rejectPromise(new CancellationToken.CancellationError(reason));
       });
 
@@ -262,14 +262,14 @@ describe('The CONTINUE cancellation token', () => {
   });
 
   it('is not cancelled', () => {
-    expect(CancellationToken.CONTINUE.isCancellationRequested).toBe(false);
+    expect(CancellationToken.CONTINUE.isCancelled).toBe(false);
   });
 
   it('does not leak from onCancellationRequested', () => {
     // Any event handlers to it should be immediately dropped rather than being stored,
     // forever leaking unbounded memory.
     for (var i = 0; i < LEAK_LOOP_COUNT; i++) {
-      CancellationToken.CONTINUE.onCancellationRequested(() => { });
+      CancellationToken.CONTINUE.onCancelled(() => { });
     }
   });
 
@@ -283,7 +283,7 @@ describe('The CONTINUE cancellation token', () => {
 describe('The CANCEL cancellation token', () => {
 
   it('is cancelled', () => {
-    expect(CancellationToken.CANCELLED.isCancellationRequested).toBe(true);
+    expect(CancellationToken.CANCELLED.isCancelled).toBe(true);
   });
 
   it('claims to be cancelable', () => {
