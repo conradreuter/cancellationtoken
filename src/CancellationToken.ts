@@ -1,7 +1,4 @@
-const NOOP: Unregistration = () => {}
-
-type Unregistration = () => void
-
+const NOOP = () => {}
 /**
  * A token that can be passed around to inform consumers of the token that a
  * certain operation has been cancelled.
@@ -78,7 +75,7 @@ class CancellationToken {
    * If this token is already cancelled, the callback is invoked immediately.
    * Returns a function that removes the cancellation callback.
    */
-  public onCancelled(cb: (reason?: any) => void): Unregistration {
+  public onCancelled(cb: (reason?: any) => void): () => void {
     if (!this.canBeCancelled) {
       return NOOP
     }
@@ -103,7 +100,7 @@ class CancellationToken {
   ) {}
 
   /**
-   * Creates a {CancellationToken} and a method that can cancel it.
+   * Create a {CancellationToken} and a method that can cancel it.
    */
   public static create(): { token: CancellationToken; cancel: (reason?: any) => void } {
     const token = new CancellationToken(false, true)
@@ -114,6 +111,15 @@ class CancellationToken {
       delete token._callbacks // release memory
     }
     return { token, cancel }
+  }
+
+  /**
+   * Create a {CancellationToken} that will be cancelled after the specified timeout in milliseconds.
+   */
+  public static timeout(ms: number): CancellationToken {
+    const { token, cancel } = CancellationToken.create()
+    setTimeout(cancel, ms)
+    return token
   }
 
   /**
@@ -153,7 +159,7 @@ class CancellationToken {
     }
 
     const combined = CancellationToken.create()
-    let unregistrations: Unregistration[]
+    let unregistrations: (() => void)[]
     const handleAnyTokenCancelled = (reason?: any) => {
       unregistrations.forEach((unregister) => unregister()) // release memory
       combined.cancel(reason)
