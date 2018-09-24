@@ -20,7 +20,7 @@ describe('A cancellation token', () => {
       ;({ cancel, token } = CancellationToken.create())
     })
 
-    it('claims to be cancelable', () => {
+    it('claims to be cancellable', () => {
       expect(token.canBeCancelled).toBe(true)
     })
 
@@ -254,7 +254,7 @@ describe('A cancellation token', () => {
 })
 
 describe('The CONTINUE cancellation token', () => {
-  it('claims to NOT be cancelable', () => {
+  it('claims to NOT be cancellable', () => {
     expect(CancellationToken.CONTINUE.canBeCancelled).toBe(false)
   })
 
@@ -282,7 +282,7 @@ describe('The CANCEL cancellation token', () => {
     expect(CancellationToken.CANCELLED.isCancelled).toBe(true)
   })
 
-  it('claims to be cancelable', () => {
+  it('claims to be cancellable', () => {
     expect(CancellationToken.CANCELLED.canBeCancelled).toBe(true)
   })
 })
@@ -299,8 +299,12 @@ describe('A timeout cancellation token', () => {
     await sleep(20)
     expect(token.isCancelled).toBeTruthy()
   })
-})
 
-function sleep(ms: number): Promise<any> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
+  it('claims to be cancellable', () => {
+    expect(CancellationToken.CANCELLED.canBeCancelled).toBe(true)
+  })
+
+  function sleep(ms: number): Promise<any> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+})
