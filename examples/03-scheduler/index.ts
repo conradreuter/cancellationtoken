@@ -1,25 +1,29 @@
 import CancellationToken from 'cancellationtoken'
 
 class Scheduler {
-  private readonly tasks: { task: Task; token: CancellationToken }[]
+  private readonly _tasksAndTokens: { task: Task; token: CancellationToken }[]
 
   public constructor() {
-    this.tasks = []
-    this.executeNextTask()
+    this._tasksAndTokens = []
+    this._executeNextTask()
   }
 
-  private executeNextTask(): void {
-    setTimeout(() => this.executeNextTask(), 1000)
-    while (this.tasks.length > 0) {
-      const { task, token } = this.tasks.shift()!
-      if (token.isCancelled) continue
-      task()
-      break
+  private _executeNextTask(): void {
+    setTimeout(() => this._executeNextTask(), 1000)
+    let nextTask: Task | undefined
+    while (!nextTask && this._tasksAndTokens.length > 0) {
+      const { task, token } = this._tasksAndTokens.shift()!
+      if (!token.isCancelled) {
+        nextTask = task
+      }
+    }
+    if (nextTask) {
+      setTimeout(nextTask, 0)
     }
   }
 
   public schedule(task: Task, token: CancellationToken = CancellationToken.CONTINUE): void {
-    this.tasks.push({ task, token })
+    this._tasksAndTokens.push({ task, token })
   }
 }
 

@@ -34,6 +34,7 @@
   "scripts-info": {
     "build": "Build the project.",
     "clean": "Clean the build directory.",
+    "example": "Run a usage example.",
     "test": "Run the unit tests once with code coverage.",
     "watch": "Run the unit tests in watch mode.",
     "info": "Print this info."

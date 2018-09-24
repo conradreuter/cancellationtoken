@@ -1,7 +1,17 @@
+import * as fs from 'fs'
+import * as path from 'path'
+
 const example: string = process.argv[2]
 if (!example) {
   console.error('Usage: npm run example <name>')
-  process.exit(1)
+  console.error()
+  console.error('Available examples:')
+  for (const dir of fs.readdirSync(__dirname)) {
+    if (fs.statSync(path.join(__dirname, dir)).isDirectory()) {
+      console.error(` - ${dir}`)
+    }
+  }
+  process.exit(0)
 }
 
 try {
