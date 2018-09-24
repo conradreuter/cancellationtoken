@@ -300,15 +300,27 @@ describe('The CANCEL cancellation token', () => {
 })
 
 describe('A timeout cancellation token', () => {
-  it('is not cancelled before the time passes', async () => {
-    const token = CancellationToken.timeout(20)
-    await sleep(10)
+  const TIMEOUT = 100
+  let cancel: (reason?: any) => void
+  let token: CancellationToken
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+    ;({ token, cancel } = CancellationToken.timeout(TIMEOUT))
+  })
+
+  it('is not cancelled before the time passes', () => {
+    jest.advanceTimersByTime(TIMEOUT - 1)
     expect(token.isCancelled).toBeFalsy()
   })
 
-  it('is cancelled after the time passes', async () => {
-    const token = CancellationToken.timeout(10)
-    await sleep(20)
+  it('is cancelled after the time passes', () => {
+    jest.advanceTimersByTime(TIMEOUT)
+    expect(token.isCancelled).toBeTruthy()
+  })
+
+  it('is cancelled immediately when cancel is invoked', () => {
+    cancel()
     expect(token.isCancelled).toBeTruthy()
   })
 
@@ -316,7 +328,8 @@ describe('A timeout cancellation token', () => {
     expect(CancellationToken.CANCELLED.canBeCancelled).toBe(true)
   })
 
-  function sleep(ms: number): Promise<any> {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
+  it('uses CancellationToken.timeout as its reason', () => {
+    jest.advanceTimersByTime(TIMEOUT)
+    expect(token.reason).toBe(CancellationToken.timeout)
+  })
 })

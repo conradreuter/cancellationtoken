@@ -100,7 +100,7 @@ class CancellationToken {
   ) {}
 
   /**
-   * Create a {CancellationToken} and a method that can cancel it.
+   * Create a {CancellationToken} and a method that cancels it.
    */
   public static create(): { token: CancellationToken; cancel: (reason?: any) => void } {
     const token = new CancellationToken(false, true)
@@ -115,12 +115,18 @@ class CancellationToken {
   }
 
   /**
-   * Create a {CancellationToken} that will be cancelled after the specified timeout in milliseconds.
+   * Create a {CancellationToken} and a method that cancels it.
+   * The token will be cancelled automatically after the specified timeout in milliseconds.
    */
-  public static timeout(ms: number): CancellationToken {
-    const { token, cancel } = CancellationToken.create()
-    setTimeout(cancel, ms)
-    return token
+  public static timeout(ms: number): { token: CancellationToken; cancel: (reason?: any) => void } {
+    const { token, cancel: originalCancel } = CancellationToken.create()
+    const timer = setTimeout(() => originalCancel(CancellationToken.timeout), ms)
+    const cancel = (reason?: any) => {
+      if (token._isCancelled) return
+      clearTimeout(timer)
+      originalCancel(reason)
+    }
+    return { token, cancel }
   }
 
   /**
