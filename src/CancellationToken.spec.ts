@@ -34,7 +34,13 @@ describe('A cancellation token', () => {
       expect(token.reason).toBe(reason)
     })
 
-    it('should execute registered handlers upon cancellation', (done) => {
+    it('should not throw an error or change the reason when cancelled multiple times', () => {
+      cancel(reason)
+      cancel({})
+      expect(token.reason).toBe(reason)
+    })
+
+    it('should execute registered cancellation callbacks upon cancellation', (done) => {
       token.onCancelled((actualReason) => {
         expect(actualReason).toBe(reason)
         done()
@@ -42,7 +48,7 @@ describe('A cancellation token', () => {
       cancel(reason)
     })
 
-    it('should execute registered handlers immediately if canceled', () => {
+    it('should execute registered cancellation callbacks immediately if canceled', () => {
       cancel(reason)
       let cbInvoked = false
       const unregister = token.onCancelled((actualReason) => {
@@ -53,15 +59,21 @@ describe('A cancellation token', () => {
       unregister() // no-op, but valid function
     })
 
-    it('should not execute registered and removed handlers upon cancellation', () => {
-      const disposeHandler = token.onCancelled((actualReason) => {
-        fail('Unexpected callback of disposed handler.')
+    it('should not execute unregistered cancellation callbacks upon cancellation', () => {
+      const unregister = token.onCancelled((actualReason) => {
+        fail('Unexpected callback of unregistered cancellation callback.')
       })
-      disposeHandler()
+      unregister()
       cancel(reason)
     })
 
-    it('should throw a CancelledError when throwIfCancellationRequested is called and the token is cancelled', () => {
+    it('should not throw an error when unregistering a cancellation callback after cancellation', () => {
+      const unregister = token.onCancelled((actualReason) => {})
+      cancel(reason)
+      unregister()
+    })
+
+    it('should throw a CancelledError when throwIfCancelled is called and the token is cancelled', () => {
       cancel(reason)
       try {
         token.throwIfCancelled()
@@ -72,7 +84,7 @@ describe('A cancellation token', () => {
       }
     })
 
-    it('should not throw an error when throwIfCancellationRequested is called and the token is not cancelled', () => {
+    it('should not throw an error when throwIfCancelled is called and the token is not cancelled', () => {
       token.throwIfCancelled() // should not throw
     })
 
@@ -80,7 +92,7 @@ describe('A cancellation token', () => {
       expect(() => token.reason).toThrow()
     })
 
-    it('Can be raced against a promise and lose to fulfillment', async () => {
+    it('can be raced against a promise and lose to fulfillment', async () => {
       const promise = new Promise<number>((resolve) => {
         setTimeout(resolve(5), 1)
       })
@@ -88,7 +100,7 @@ describe('A cancellation token', () => {
       expect(result).toEqual(5)
     })
 
-    it('Can be raced against a promise and lose to rejection', async () => {
+    it('can be raced against a promise and lose to rejection', async () => {
       const promise = new Promise<number>((resolve, reject) => {
         setTimeout(reject('oops'), 1)
       })
@@ -100,7 +112,7 @@ describe('A cancellation token', () => {
       }
     })
 
-    it('Can be raced against a promise and win', async () => {
+    it('can be raced against a promise and win', async () => {
       const promise = new Promise<number>((r) => {})
       setTimeout(() => {
         cancel(reason)
@@ -153,7 +165,7 @@ describe('A cancellation token', () => {
       expect(token.reason).toEqual(expect.arrayContaining([reason1, reason2]))
     })
 
-    it('Is CONTINUE if any are CONTINUE', () => {
+    it('is CONTINUE if any are CONTINUE', () => {
       const token = CancellationToken.all(CancellationToken.CONTINUE, token1)
       expect(token).toBe(CancellationToken.CONTINUE)
     })
@@ -262,7 +274,7 @@ describe('The CONTINUE cancellation token', () => {
     expect(CancellationToken.CONTINUE.isCancelled).toBe(false)
   })
 
-  it('does not leak from onCancellationRequested', () => {
+  it('does not leak from onCancelled', () => {
     // Any event handlers to it should be immediately dropped rather than being stored,
     // forever leaking unbounded memory.
     for (var i = 0; i < LEAK_LOOP_COUNT; i++) {

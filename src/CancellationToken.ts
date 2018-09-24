@@ -73,7 +73,7 @@ class CancellationToken {
   /**
    * Invoke the callback when this token is cancelled.
    * If this token is already cancelled, the callback is invoked immediately.
-   * Returns a function that removes the cancellation callback.
+   * Returns a function that unregisters the cancellation callback.
    */
   public onCancelled(cb: (reason?: any) => void): () => void {
     if (!this.canBeCancelled) {
@@ -85,7 +85,7 @@ class CancellationToken {
     }
 
     this._callbacks.add(cb)
-    return () => this._callbacks.delete(cb)
+    return () => this._callbacks && this._callbacks.delete(cb)
   }
 
   private constructor(
@@ -105,6 +105,7 @@ class CancellationToken {
   public static create(): { token: CancellationToken; cancel: (reason?: any) => void } {
     const token = new CancellationToken(false, true)
     const cancel = (reason?: any) => {
+      if (token._isCancelled) return
       token._isCancelled = true
       token._reason = reason
       token._callbacks.forEach((cb) => cb(reason))
