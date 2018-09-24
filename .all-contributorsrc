@@ -1,0 +1,37 @@
+{
+  "projectName": "cancellationtoken",
+  "projectOwner": "conradreuter",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "conradreuter",
+      "name": "conradreuter",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6838728?v=4",
+      "profile": "https://github.com/conradreuter",
+      "contributions": [
+        "code",
+        "doc",
+        "example",
+        "test"
+      ]
+    },
+    {
+      "login": "AArnott",
+      "name": "Andrew Arnott",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/3548?v=4",
+      "profile": "http://blog.nerdbank.net",
+      "contributions": [
+        "code",
+        "bug",
+        "doc",
+        "test"
+      ]
+    }
+  ]
+}

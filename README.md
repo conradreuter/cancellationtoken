@@ -61,3 +61,12 @@ yarn
 yarn run example 01-tutorial
 yarn run example <name>
 ```
+
+## Contributors
+
+<!-- prettier-ignore-start -->
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+| [<img src="https://avatars0.githubusercontent.com/u/6838728?v=4" width="100px;"/><br /><sub><b>conradreuter</b></sub>](https://github.com/conradreuter)<br />[💻](https://github.com/conradreuter/cancellationtoken/commits?author=conradreuter "Code") [📖](https://github.com/conradreuter/cancellationtoken/commits?author=conradreuter "Documentation") [💡](#example-conradreuter "Examples") [⚠️](https://github.com/conradreuter/cancellationtoken/commits?author=conradreuter "Tests") | [<img src="https://avatars2.githubusercontent.com/u/3548?v=4" width="100px;"/><br /><sub><b>Andrew Arnott</b></sub>](http://blog.nerdbank.net)<br />[💻](https://github.com/conradreuter/cancellationtoken/commits?author=AArnott "Code") [🐛](https://github.com/conradreuter/cancellationtoken/issues?q=author%3AAArnott "Bug reports") [📖](https://github.com/conradreuter/cancellationtoken/commits?author=AArnott "Documentation") [⚠️](https://github.com/conradreuter/cancellationtoken/commits?author=AArnott "Tests") |
+| :---: | :---: |
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+<!-- prettier-ignore-end -->
