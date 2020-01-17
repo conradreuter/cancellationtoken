@@ -1,4 +1,11 @@
 const NOOP = () => {}
+
+interface CancellationTokenSource {
+  token: CancellationToken
+  cancel: (reason?: any) => void
+  dispose: () => void
+}
+
 /**
  * A token that can be passed around to inform consumers of the token that a
  * certain operation has been cancelled.
@@ -25,6 +32,13 @@ class CancellationToken {
   }
 
   /**
+   * Whether the token can been cancelled.
+   */
+  public get canBeCancelled(): boolean {
+    return this._canBeCancelled
+  }
+
+  /**
    * Why this token has been cancelled.
    */
   public get reason(): any {
@@ -40,7 +54,7 @@ class CancellationToken {
    * or rejects when the operation is rejected or this token is cancelled.
    */
   public racePromise<T>(asyncOperation: Promise<T>): Promise<T> {
-    if (!this.canBeCancelled) {
+    if (!this._canBeCancelled) {
       return asyncOperation
     }
     return new Promise<T>((resolve, reject) => {
@@ -76,7 +90,7 @@ class CancellationToken {
    * Returns a function that unregisters the cancellation callback.
    */
   public onCancelled(cb: (reason?: any) => void): () => void {
-    if (!this.canBeCancelled) {
+    if (!this._canBeCancelled) {
       return NOOP
     }
     if (this.isCancelled) {
@@ -96,37 +110,50 @@ class CancellationToken {
     /**
      * Whether the token can be cancelled.
      */
-    public readonly canBeCancelled: boolean,
+    private _canBeCancelled: boolean,
   ) {}
 
   /**
    * Create a {CancellationToken} and a method that cancels it.
    */
-  public static create(): { token: CancellationToken; cancel: (reason?: any) => void } {
+  public static create(): CancellationTokenSource {
     const token = new CancellationToken(false, true)
+
     const cancel = (reason?: any) => {
-      if (token._isCancelled) return
+      if (token._isCancelled || !token._canBeCancelled) return
       token._isCancelled = true
       token._reason = reason
       token._callbacks.forEach((cb) => cb(reason))
       delete token._callbacks // release memory
     }
-    return { token, cancel }
+
+    const dispose = () => {
+      delete token._callbacks
+      if (!token._isCancelled) token._canBeCancelled = false
+    }
+    return { token, cancel, dispose }
   }
 
   /**
    * Create a {CancellationToken} and a method that cancels it.
    * The token will be cancelled automatically after the specified timeout in milliseconds.
    */
-  public static timeout(ms: number): { token: CancellationToken; cancel: (reason?: any) => void } {
-    const { token, cancel: originalCancel } = CancellationToken.create()
+  public static timeout(ms: number): CancellationTokenSource {
+    const { token, cancel: originalCancel, dispose: originalDispose } = CancellationToken.create()
     const timer = setTimeout(() => originalCancel(CancellationToken.timeout), ms)
+
     const cancel = (reason?: any) => {
-      if (token._isCancelled) return
+      if (token._isCancelled || !token._canBeCancelled) return
       clearTimeout(timer)
       originalCancel(reason)
     }
-    return { token, cancel }
+
+    const dispose = () => {
+      if (token._isCancelled || !token._canBeCancelled) return
+      clearTimeout(timer)
+      originalDispose()
+    }
+    return { token, cancel, dispose }
   }
 
   /**
@@ -136,7 +163,7 @@ class CancellationToken {
    */
   public static all(...tokens: CancellationToken[]): CancellationToken {
     // If *any* of the tokens cannot be cancelled, then the token we return can never be.
-    if (tokens.some((token) => !token.canBeCancelled)) {
+    if (tokens.some((token) => !token._canBeCancelled)) {
       return CancellationToken.CONTINUE
     }
 

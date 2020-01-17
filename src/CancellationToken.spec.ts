@@ -14,10 +14,12 @@ describe('A cancellation token', () => {
   describe('that was created independently', () => {
     let cancel: (reason?: any) => void
     let token: CancellationToken
+    let dispose: () => void
+
     const reason = {}
 
     beforeEach(() => {
-      ;({ cancel, token } = CancellationToken.create())
+      ;({ cancel, token, dispose } = CancellationToken.create())
     })
 
     it('claims to be cancellable', () => {
@@ -34,16 +36,37 @@ describe('A cancellation token', () => {
       expect(token.reason).toBe(reason)
     })
 
+    it('should report not able to cancel after dispose', () => {
+      dispose()
+      expect(token.isCancelled).toBe(false)
+      expect(token.canBeCancelled).toBe(false)
+    })
+
+    it('should not invoke cancel after dispose', () => {
+      token.onCancelled(() => {
+        fail('Cancelled after dispose')
+      })
+      dispose()
+      cancel('oops')
+    })
+
+    it('should be able to dispose after cancel', () => {
+      cancel('oops')
+      dispose()
+      expect(token.canBeCancelled).toBe(true)
+      expect(token.isCancelled).toBe(true)
+    })
+
     it('should not throw an error or change the reason when cancelled multiple times', () => {
       cancel(reason)
       cancel({})
       expect(token.reason).toBe(reason)
     })
 
-    it('should execute registered cancellation callbacks upon cancellation', (done) => {
+    it('should execute registered cancellation callbacks upon cancellation', () => {
+      expect.assertions(1)
       token.onCancelled((actualReason) => {
         expect(actualReason).toBe(reason)
-        done()
       })
       cancel(reason)
     })
@@ -94,7 +117,7 @@ describe('A cancellation token', () => {
 
     it('can be raced against a promise and lose to fulfillment', async () => {
       const promise = new Promise<number>((resolve) => {
-        setTimeout(resolve(5), 1)
+        setTimeout(() => resolve(5), 1)
       })
       const result = await token.racePromise(promise)
       expect(result).toEqual(5)
@@ -102,7 +125,7 @@ describe('A cancellation token', () => {
 
     it('can be raced against a promise and lose to rejection', async () => {
       const promise = new Promise<number>((resolve, reject) => {
-        setTimeout(reject('oops'), 1)
+        setTimeout(() => reject('oops'), 1)
       })
       try {
         await token.racePromise(promise)
@@ -303,10 +326,11 @@ describe('A timeout cancellation token', () => {
   const TIMEOUT = 100
   let cancel: (reason?: any) => void
   let token: CancellationToken
+  let dispose: () => void
 
   beforeEach(() => {
     jest.useFakeTimers()
-    ;({ token, cancel } = CancellationToken.timeout(TIMEOUT))
+    ;({ token, cancel, dispose } = CancellationToken.timeout(TIMEOUT))
   })
 
   it('is not cancelled before the time passes', () => {
@@ -325,11 +349,27 @@ describe('A timeout cancellation token', () => {
   })
 
   it('claims to be cancellable', () => {
-    expect(CancellationToken.CANCELLED.canBeCancelled).toBe(true)
+    expect(token.canBeCancelled).toBe(true)
   })
 
   it('uses CancellationToken.timeout as its reason', () => {
     jest.advanceTimersByTime(TIMEOUT)
     expect(token.reason).toBe(CancellationToken.timeout)
+  })
+
+  it('calls callbacks after timeout', () => {
+    expect.assertions(1)
+    token.onCancelled((reason) => {
+      expect(reason).toBe(CancellationToken.timeout)
+    })
+    jest.advanceTimersByTime(TIMEOUT)
+  })
+
+  it('does not call cancel callbacks after timeout if disposed', () => {
+    token.onCancelled(() => {
+      fail('Cancel callback called after dispose')
+    })
+    dispose()
+    jest.advanceTimersByTime(TIMEOUT)
   })
 })
