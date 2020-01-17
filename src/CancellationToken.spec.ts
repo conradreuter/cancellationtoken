@@ -322,7 +322,7 @@ describe('The CANCEL cancellation token', () => {
     expect(CancellationToken.CANCELLED.isCancelled).toBe(true)
   })
 
-  it('claims to be cancellable', () => {
+  it('claims to be cancellable  ', () => {
     expect(CancellationToken.CANCELLED.canBeCancelled).toBe(true)
   })
 })
@@ -353,7 +353,7 @@ describe('A timeout cancellation token', () => {
     expect(token.isCancelled).toBeTruthy()
   })
 
-  it('claims to be cancellable', () => {
+  it('claims to be cancellable ', () => {
     expect(token.canBeCancelled).toBe(true)
   })
 
@@ -378,8 +378,16 @@ describe('A timeout cancellation token', () => {
     jest.advanceTimersByTime(TIMEOUT)
   })
 
-  it('should be possible to dispose multiple times', () => {
+  it('should be possible to dispose timeout token multiple times', () => {
     dispose()
     dispose()
+  })
+
+  it('should not cancel after disposal', () => {
+    token.onCancelled(() => {
+      fail('cancel callback invoked, while token disposed')
+    })
+    dispose()
+    cancel()
   })
 })

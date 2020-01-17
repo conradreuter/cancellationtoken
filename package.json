@@ -25,8 +25,8 @@
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist/",
-    "test": "jest -c jest.json --coverage",
-    "watch": "jest -c jest.json --watch",
+    "test": "jest --coverage",
+    "watch": "jest --watch",
     "example": "ts-node -P examples/tsconfig.json -r tsconfig-paths/register examples/run.ts",
     "info": "npm-scripts-info",
     "prepublish": "npm run clean && npm run build"
