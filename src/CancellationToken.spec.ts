@@ -57,6 +57,11 @@ describe('A cancellation token', () => {
       expect(token.isCancelled).toBe(true)
     })
 
+    it('should be possible to dispose multiple times', () => {
+      dispose()
+      dispose()
+    })
+
     it('should not throw an error or change the reason when cancelled multiple times', () => {
       cancel(reason)
       cancel({})
@@ -371,5 +376,10 @@ describe('A timeout cancellation token', () => {
     })
     dispose()
     jest.advanceTimersByTime(TIMEOUT)
+  })
+
+  it('should be possible to dispose multiple times', () => {
+    dispose()
+    dispose()
   })
 })
