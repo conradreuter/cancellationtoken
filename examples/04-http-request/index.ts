@@ -9,7 +9,7 @@ import * as Https from 'https'
 
 async function sendRequestWithTimeout(ms: number): Promise<void> {
   console.log(`Sending request with a timeout of ${ms}ms...`)
-  const { token, cancel } = CancellationToken.timeout(ms)
+  const {token, cancel} = CancellationToken.timeout(ms)
   const request = Https.get('https://github.com')
   const unregister = token.onCancelled(() => request.abort())
 

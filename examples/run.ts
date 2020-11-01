@@ -1,13 +1,13 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import * as FS from 'fs'
+import * as Path from 'path'
 
-const example: string = process.argv[2]
-if (!example) {
-  console.error('Usage: npm run example <name>')
+const example = process.argv[2]
+if (example == null) {
+  console.error('Usage: yarn example <name>')
   console.error()
   console.error('Available examples:')
-  for (const dir of fs.readdirSync(__dirname)) {
-    if (fs.statSync(path.join(__dirname, dir)).isDirectory()) {
+  for (const dir of FS.readdirSync(__dirname)) {
+    if (FS.statSync(Path.join(__dirname, dir)).isDirectory()) {
       console.error(` - ${dir}`)
     }
   }
@@ -15,8 +15,11 @@ if (!example) {
 }
 
 try {
-  require('./' + example)
+  require(Path.resolve(__dirname, example))
 } catch (err) {
-  if (err.message !== `Cannot find module './${example}'`) throw err
-  console.error(`Example '${example}' does not exist`)
+  if (err.code === 'MODULE_NOT_FOUND') {
+    console.error(`Example '${example}' does not exist`)
+    process.exit(404)
+  }
+  throw err
 }

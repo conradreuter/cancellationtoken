@@ -1,11 +1,12 @@
 const NOOP = () => {}
+
 /**
  * A token that can be passed around to inform consumers of the token that a
  * certain operation has been cancelled.
  */
 class CancellationToken {
   private _reason: any
-  private _callbacks: Set<(reason?: any) => void> = new Set()
+  private _callbacks?: Set<(reason?: any) => void> = new Set()
 
   /**
    * A cancellation token that is already cancelled.
@@ -84,8 +85,9 @@ class CancellationToken {
       return NOOP
     }
 
-    this._callbacks.add(cb)
-    return () => this._callbacks && this._callbacks.delete(cb)
+    /* istanbul ignore next */
+    this._callbacks?.add(cb)
+    return () => this._callbacks?.delete(cb)
   }
 
   private constructor(
@@ -102,31 +104,32 @@ class CancellationToken {
   /**
    * Create a {CancellationToken} and a method that cancels it.
    */
-  public static create(): { token: CancellationToken; cancel: (reason?: any) => void } {
+  public static create(): {token: CancellationToken; cancel: (reason?: any) => void} {
     const token = new CancellationToken(false, true)
     const cancel = (reason?: any) => {
       if (token._isCancelled) return
       token._isCancelled = true
       token._reason = reason
-      token._callbacks.forEach((cb) => cb(reason))
+      /* istanbul ignore next */
+      token._callbacks?.forEach((cb) => cb(reason))
       delete token._callbacks // release memory
     }
-    return { token, cancel }
+    return {token, cancel}
   }
 
   /**
    * Create a {CancellationToken} and a method that cancels it.
    * The token will be cancelled automatically after the specified timeout in milliseconds.
    */
-  public static timeout(ms: number): { token: CancellationToken; cancel: (reason?: any) => void } {
-    const { token, cancel: originalCancel } = CancellationToken.create()
+  public static timeout(ms: number): {token: CancellationToken; cancel: (reason?: any) => void} {
+    const {token, cancel: originalCancel} = CancellationToken.create()
     const timer = setTimeout(() => originalCancel(CancellationToken.timeout), ms)
     const cancel = (reason?: any) => {
       if (token._isCancelled) return
       clearTimeout(timer)
       originalCancel(reason)
     }
-    return { token, cancel }
+    return {token, cancel}
   }
 
   /**

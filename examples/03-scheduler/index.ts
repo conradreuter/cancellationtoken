@@ -1,7 +1,7 @@
 import CancellationToken from 'cancellationtoken'
 
 class Scheduler {
-  private readonly _tasksAndTokens: { task: Task; token: CancellationToken }[]
+  private readonly _tasksAndTokens: {task: Task; token: CancellationToken}[]
 
   public constructor() {
     this._tasksAndTokens = []
@@ -12,7 +12,7 @@ class Scheduler {
     setTimeout(() => this._executeNextTask(), 1000)
     let nextTask: Task | undefined
     while (!nextTask && this._tasksAndTokens.length > 0) {
-      const { task, token } = this._tasksAndTokens.shift()!
+      const {task, token} = this._tasksAndTokens.shift()!
       if (!token.isCancelled) {
         nextTask = task
       }
@@ -23,7 +23,7 @@ class Scheduler {
   }
 
   public schedule(task: Task, token: CancellationToken = CancellationToken.CONTINUE): void {
-    this._tasksAndTokens.push({ task, token })
+    this._tasksAndTokens.push({task, token})
   }
 }
 
@@ -32,7 +32,7 @@ interface Task {
 }
 
 const scheduler = new Scheduler()
-const { cancel, token } = CancellationToken.create()
+const {cancel, token} = CancellationToken.create()
 scheduler.schedule(task1)
 scheduler.schedule(task2, token)
 scheduler.schedule(() => process.exit(0))

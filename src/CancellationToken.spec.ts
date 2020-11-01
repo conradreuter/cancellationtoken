@@ -17,7 +17,7 @@ describe('A cancellation token', () => {
     const reason = {}
 
     beforeEach(() => {
-      ;({ cancel, token } = CancellationToken.create())
+      ;({cancel, token} = CancellationToken.create())
     })
 
     it('claims to be cancellable', () => {
@@ -94,7 +94,7 @@ describe('A cancellation token', () => {
 
     it('can be raced against a promise and lose to fulfillment', async () => {
       const promise = new Promise<number>((resolve) => {
-        setTimeout(resolve(5), 1)
+        setTimeout(() => resolve(5), 1)
       })
       const result = await token.racePromise(promise)
       expect(result).toEqual(5)
@@ -102,7 +102,7 @@ describe('A cancellation token', () => {
 
     it('can be raced against a promise and lose to rejection', async () => {
       const promise = new Promise<number>((resolve, reject) => {
-        setTimeout(reject('oops'), 1)
+        setTimeout(() => reject('oops'), 1)
       })
       try {
         await token.racePromise(promise)
@@ -137,8 +137,8 @@ describe('A cancellation token', () => {
     const reason2 = {}
 
     beforeEach(() => {
-      ;({ cancel: cancel1, token: token1 } = CancellationToken.create())
-      ;({ cancel: cancel2, token: token2 } = CancellationToken.create())
+      ;({cancel: cancel1, token: token1} = CancellationToken.create())
+      ;({cancel: cancel2, token: token2} = CancellationToken.create())
       token = CancellationToken.all(token1, token2)
     })
 
@@ -180,8 +180,8 @@ describe('A cancellation token', () => {
     const reason = {}
 
     beforeEach(() => {
-      ;({ cancel: cancel1, token: token1 } = CancellationToken.create())
-      ;({ cancel: cancel2, token: token2 } = CancellationToken.create())
+      ;({cancel: cancel1, token: token1} = CancellationToken.create())
+      ;({cancel: cancel2, token: token2} = CancellationToken.create())
       token = CancellationToken.race(token1, token2)
     })
 
@@ -213,7 +213,7 @@ describe('A cancellation token', () => {
 
   describe('that is long-lived', () => {
     it('works in common async pattern', async () => {
-      const { token, cancel } = CancellationToken.create()
+      const {token, cancel} = CancellationToken.create()
       for (let i = 0; i < 10; i++) {
         await someOperationAsync(token)
       }
@@ -242,7 +242,7 @@ describe('A cancellation token', () => {
     }
 
     it('does not leak resolving promises', async () => {
-      const { token, cancel } = CancellationToken.create()
+      const {token, cancel} = CancellationToken.create()
       for (let i = 0; i < LEAK_LOOP_COUNT; i++) {
         await someFastOperationAsync(token)
       }
@@ -303,10 +303,11 @@ describe('A timeout cancellation token', () => {
   const TIMEOUT = 100
   let cancel: (reason?: any) => void
   let token: CancellationToken
+  const reason = {}
 
   beforeEach(() => {
     jest.useFakeTimers()
-    ;({ token, cancel } = CancellationToken.timeout(TIMEOUT))
+    ;({token, cancel} = CancellationToken.timeout(TIMEOUT))
   })
 
   it('is not cancelled before the time passes', () => {
@@ -320,8 +321,23 @@ describe('A timeout cancellation token', () => {
   })
 
   it('is cancelled immediately when cancel is invoked', () => {
-    cancel()
+    cancel(reason)
     expect(token.isCancelled).toBeTruthy()
+    expect(token.reason).toBe(reason)
+  })
+
+  it('should not throw an error or change the reason when cancel is invoked multiple times', () => {
+    cancel(reason)
+    cancel({})
+    expect(token.isCancelled).toBeTruthy()
+    expect(token.reason).toBe(reason)
+  })
+
+  it('should not throw an error or change the reason when cancel is invoked after the time passes', () => {
+    jest.advanceTimersByTime(TIMEOUT)
+    cancel({})
+    expect(token.isCancelled).toBeTruthy()
+    expect(token.reason).toBe(CancellationToken.timeout)
   })
 
   it('claims to be cancellable', () => {

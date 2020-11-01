@@ -1,6 +1,6 @@
 import CancellationToken from 'cancellationtoken'
 
-const { cancel, token } = CancellationToken.create()
+const {cancel, token} = CancellationToken.create()
 fibonacci((n, fib) => {
   console.log(`F(${n}) = ${fib}`)
   if (n >= 9) cancel()

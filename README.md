@@ -44,22 +44,11 @@ Coming soon! Meanwhile you can use the TypeScript definitions and examples.
 
 ## Examples
 
-For usage examples have a look at the `examples/` directory.
-
 ```
-cd examples/
-npm install
-npm run example 01-tutorial
-npm run example <name>
-```
-
-or
-
-```
-cd examples/
+git clone https://github.com/conradreuter/cancellationtoken
+cd cancellationtoken/
 yarn
-yarn run example 01-tutorial
-yarn run example <name>
+yarn example 01-usage
 ```
 
 ## Contributors
