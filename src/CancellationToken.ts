@@ -106,15 +106,20 @@ class CancellationToken {
    */
   public static create(): CancellationToken.Source {
     const token = new CancellationToken(false, true)
+
     const cancel = (reason?: any) => {
       if (token._isCancelled) return
       token._isCancelled = true
       token._reason = reason
-      /* istanbul ignore next */
       token._callbacks?.forEach((cb) => cb(reason))
+      dispose()
+    }
+
+    const dispose = () => {
       delete token._callbacks // release memory
     }
-    return {token, cancel}
+
+    return {token, cancel, dispose}
   }
 
   /**
@@ -122,14 +127,28 @@ class CancellationToken {
    * The token will be cancelled automatically after the specified timeout in milliseconds.
    */
   public static timeout(ms: number): CancellationToken.Source {
-    const {token, cancel: originalCancel} = CancellationToken.create()
-    const timer = setTimeout(() => originalCancel(CancellationToken.timeout), ms)
-    const cancel = (reason?: any) => {
-      if (token._isCancelled) return
+    const {token, cancel: originalCancel, dispose: originalDispose} = CancellationToken.create()
+
+    let timer: NodeJS.Timeout | null
+    timer = setTimeout(() => originalCancel(CancellationToken.timeout), ms)
+    const disposeTimer = () => {
+      if (timer == null) return
       clearTimeout(timer)
+      timer = null
+    }
+
+    const cancel = (reason?: any) => {
+      disposeTimer()
       originalCancel(reason)
     }
-    return {token, cancel}
+
+    /* istanbul ignore next */
+    const dispose = () => {
+      disposeTimer()
+      originalDispose()
+    }
+
+    return {token, cancel, dispose}
   }
 
   /**
@@ -186,15 +205,20 @@ namespace CancellationToken {
    */
   export interface Source {
     /**
-     * The {CancellationToken} provided by this {Source}.
+     * The token provided by this source.
      */
     token: CancellationToken
 
     /**
-     * Cancel the provided {CancellationToken} with the given reason.
-     * Do nothing if the provided {CancellationToken} cannot be cancelled or is already cancelled.
+     * Cancel the provided token with the given reason.
+     * Do nothing if the provided token cannot be cancelled or is already cancelled.
      */
     cancel(reason?: any): void
+
+    /**
+     * Dipose of the token and this source and release memory.
+     */
+    dispose(): void
   }
 
   /**

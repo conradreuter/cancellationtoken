@@ -13,11 +13,12 @@ const LEAK_LOOP_COUNT = 100000
 describe('A cancellation token', () => {
   describe('that was created independently', () => {
     let cancel: (reason?: any) => void
+    let dispose: () => void
     let token: CancellationToken
     const reason = {}
 
     beforeEach(() => {
-      ;({cancel, token} = CancellationToken.create())
+      ;({cancel, dispose, token} = CancellationToken.create())
     })
 
     it('claims to be cancellable', () => {
@@ -124,6 +125,23 @@ describe('A cancellation token', () => {
         expect(err).toBeInstanceOf(CancellationToken.CancellationError)
         expect(err.reason).toBe(reason)
       }
+    })
+
+    it('can be disposed twice', () => {
+      dispose()
+      dispose()
+    })
+
+    it('should not execute cancellation callbacks upon cancellation when previously disposed', () => {
+      token.onCancelled(() => fail('Unexpected call of cancellation callback.'))
+      dispose()
+      cancel(reason)
+    })
+
+    it('should not accept new cancellation callbacks when previously disposed', () => {
+      dispose()
+      token.onCancelled(() => fail('Unexpected call of cancellation callback.'))
+      cancel(reason)
     })
   })
 
