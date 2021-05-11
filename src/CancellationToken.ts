@@ -102,9 +102,9 @@ class CancellationToken {
   ) {}
 
   /**
-   * Create a {CancellationToken} and a method that cancels it.
+   * Create a {CancellationTokenSource}.
    */
-  public static create(): {token: CancellationToken; cancel: (reason?: any) => void} {
+  public static create(): CancellationToken.Source {
     const token = new CancellationToken(false, true)
     const cancel = (reason?: any) => {
       if (token._isCancelled) return
@@ -118,10 +118,10 @@ class CancellationToken {
   }
 
   /**
-   * Create a {CancellationToken} and a method that cancels it.
+   * Create a {CancellationTokenSource}.
    * The token will be cancelled automatically after the specified timeout in milliseconds.
    */
-  public static timeout(ms: number): {token: CancellationToken; cancel: (reason?: any) => void} {
+  public static timeout(ms: number): CancellationToken.Source {
     const {token, cancel: originalCancel} = CancellationToken.create()
     const timer = setTimeout(() => originalCancel(CancellationToken.timeout), ms)
     const cancel = (reason?: any) => {
@@ -181,6 +181,22 @@ class CancellationToken {
 
 /* istanbul ignore next */
 namespace CancellationToken {
+  /**
+   * Provides a {CancellationToken}, along with some methods to operate on it.
+   */
+  export interface Source {
+    /**
+     * The {CancellationToken} provided by this {Source}.
+     */
+    token: CancellationToken
+
+    /**
+     * Cancel the provided {CancellationToken} with the given reason.
+     * Do nothing if the provided {CancellationToken} cannot be cancelled or is already cancelled.
+     */
+    cancel(reason?: any): void
+  }
+
   /**
    * The error that is thrown when a {CancellationToken} has been cancelled and a
    * consumer of the token calls {CancellationToken.throwIfCancelled} on it.
