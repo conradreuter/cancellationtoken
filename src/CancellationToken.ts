@@ -26,6 +26,13 @@ class CancellationToken {
   }
 
   /**
+   * Whether the token can be cancelled.
+   */
+  public get canBeCancelled(): boolean {
+    return this._canBeCancelled;
+  }
+
+  /**
    * Why this token has been cancelled.
    */
   public get reason(): any {
@@ -98,7 +105,7 @@ class CancellationToken {
     /**
      * Whether the token can be cancelled.
      */
-    public readonly canBeCancelled: boolean,
+    private _canBeCancelled: boolean,
   ) {}
 
   /**
@@ -116,6 +123,7 @@ class CancellationToken {
     }
 
     const dispose = () => {
+      token._canBeCancelled = token.isCancelled
       delete token._callbacks // release memory
     }
 

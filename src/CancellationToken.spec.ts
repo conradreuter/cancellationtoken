@@ -143,6 +143,19 @@ describe('A cancellation token', () => {
       token.onCancelled(() => fail('Unexpected call of cancellation callback.'))
       cancel(reason)
     })
+
+    it('should report being uncancellable after its source is disposed', () => {
+      expect(token.canBeCancelled).toBeTruthy()
+      dispose()
+      expect(token.canBeCancelled).toBeFalsy()
+    })
+
+    it('should report being cancelled and cancellable after its source is disposed', () => {
+      cancel()
+      dispose()
+      expect(token.canBeCancelled).toBeTruthy()
+      expect(token.isCancelled).toBeTruthy()
+    })
   })
 
   describe('that was created via all', () => {
