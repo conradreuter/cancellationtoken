@@ -224,7 +224,7 @@ namespace CancellationToken {
     cancel(reason?: any): void
 
     /**
-     * Dipose of the token and this source and release memory.
+     * Dispose of the token and this source and release memory.
      */
     dispose(): void
   }
